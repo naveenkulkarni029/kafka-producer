@@ -1,6 +1,7 @@
 package org.nbk.demo.kafka.producer.service;
 
-import org.apache.kafka.common.record.RecordBatch;
+import org.nbk.demo.kafka.avro.model.Product;
+import org.nbk.demo.kafka.avro.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
@@ -8,16 +9,16 @@ import org.springframework.stereotype.Service;
 @Service
 public class KafkaProducerServiceImpl implements KafkaProducerService {
 
-    private KafkaTemplate<String, String> kafkaTemplate;
-
     @Autowired
-    public KafkaProducerServiceImpl(KafkaTemplate<String, String> kafkaTemplate) {
+    private KafkaTemplate<String, Product> kafkaTemplate;
+
+    /*@Autowired
+    public KafkaProducerServiceImpl(KafkaTemplate<User, Product> kafkaTemplate) {
 	this.kafkaTemplate = kafkaTemplate;
-    }
+    }*/
 
     @Override
     public void sendMessage(String message) {
-	System.out.println(message);
 
 	// Kafka Template.send: Creates an object of Apache Kafka ProducerRecord with 2
 	// parameters "topic" and value is the message..
@@ -110,7 +111,10 @@ public class KafkaProducerServiceImpl implements KafkaProducerService {
 	// Lastly, develop a custom partitioner implementation add it to the class part
 	// and specify as a partitioner.class properties.
 
-	kafkaTemplate.send("testMessage", message);
+	User user = new User("Name", "Password");
+	Product product = new Product("1", "mobilePhone", "mobile", "good phone to user", "android 10");
+	
+	kafkaTemplate.send("my-avro-topic", user.toString(), product);
     }
 
 }

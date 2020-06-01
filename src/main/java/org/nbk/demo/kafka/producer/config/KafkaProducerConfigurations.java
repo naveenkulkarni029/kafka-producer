@@ -3,10 +3,12 @@ package org.nbk.demo.kafka.producer.config;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.producer.ProducerConfig;
-import org.apache.kafka.common.serialization.StringSerializer;
+import org.nbk.demo.kafka.avro.model.Product;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
@@ -15,7 +17,7 @@ import org.springframework.kafka.core.ProducerFactory;
 public class KafkaProducerConfigurations {
 
     @Bean
-    public ProducerFactory<String, String> producerFactory() {
+    public ProducerFactory<String, Product> producerFactory() {
 	Map<String, Object> configProperties = new HashMap<>();
 	// Bootstrap Server: Cluster membership this configuration is needed for the
 	// producer
@@ -36,15 +38,21 @@ public class KafkaProducerConfigurations {
 	// producer will generated a RTE serialization exception. type mismatch as per
 	// the value.serialzer property.
 
-	configProperties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-	configProperties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+	configProperties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "io.confluent.kafka.serializers.KafkaAvroSerializer");
+	configProperties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "io.confluent.kafka.serializers.KafkaAvroSerializer");
+	configProperties.put("schema.registry.url", "http://localhost:8089");
 
 	return new DefaultKafkaProducerFactory<>(configProperties);
     }
 
     @Bean
-    public KafkaTemplate<String, String> kafkaTemplate() {
+    public KafkaTemplate<String, Product> kafkaTemplate() {
 	return new KafkaTemplate<>(producerFactory());
+    }
+
+    @Bean
+    public NewTopic newTopic() {
+	return TopicBuilder.name("my-avro-topic").partitions(2).build();
     }
 
 }
